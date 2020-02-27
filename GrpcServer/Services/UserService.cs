@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -25,9 +26,14 @@ namespace GrpcServer.Services
         {
             UserModel user = new UserModel
             {
-                Password = request.Password,
                 UserName = request.UserName
             };
+
+            if (request.Password == request.ConfirmedPassword)
+                user.Password = PasswordHelper.HashPassword(request.Password);
+            else
+                return Task.FromResult(new ReplyMessage {IsSuccess = false});
+
             return Task.FromResult(new ReplyMessage{IsSuccess = _db.InsertRecord(_table, user) });
         }
 
@@ -65,6 +71,7 @@ namespace GrpcServer.Services
             });
         }
 
+        [Authorize("Administrators")]
         public override Task<ReplyMessage> DeleteUser(UserRequestModel request, ServerCallContext context)
         {
             var result = _db.DeleteRecord<UserModel>(_table, request.Id);
@@ -76,10 +83,11 @@ namespace GrpcServer.Services
         {
             var users = _db.LoadRecords<UserModel>(_table);
             var user = users.First(x => x.UserName == request.UserName);
-
-            if (user.Password == request.Password)
+            var isSuccesValidatePassword = PasswordHelper.ValidatePassword(request.Password, user.Password);
+            if (isSuccesValidatePassword)
             {
                 // Implement a client token system. 
+                return Task.FromResult(new LoginReply {ClientToken = "lol", IsSuccess = true});
             }
 
             return Task.FromResult(new LoginReply{IsSuccess = false});

@@ -46,32 +46,20 @@ namespace GrpcClient
             //    Console.WriteLine("success");
 
             Console.WriteLine();
+            Console.WriteLine("Please enter your username:");
+            var userName = Console.ReadLine();
             Console.WriteLine("Please enter password to login");
             var loginPassword = Console.ReadLine();
 
-            var user = client.GetUserById(new UserRequestModel{Id = currentUser.Id });
+            var user = await client.LoginUserAsync(
+                new UserTransferModel {UserName = userName, Password = loginPassword});
 
-            var isLoggedIn = ValidatePassword(loginPassword, user.Password);
-
-            if (isLoggedIn)
-                Console.WriteLine($"You have successfully logged in. Hashed password is {user.Password}");
+            if (user.IsSuccess)
+                Console.WriteLine($"You have successfully logged in.");
 
             Console.ReadLine();
         }
 
-        public static string GetRandomSalt()
-        {
-            return BCryptHelper.GenerateSalt(12);
-        }
-
-        public static string HashPassword(string password)
-        {
-            return BCryptHelper.HashPassword(password, GetRandomSalt());
-        }
-
-        public static bool ValidatePassword(string password, string hashedPassword)
-        {
-            return BCryptHelper.CheckPassword(password, hashedPassword);
-        }
+        
     }
 }

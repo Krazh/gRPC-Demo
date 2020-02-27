@@ -36,6 +36,7 @@ message UserTransferModel {
     string Id = 1;
     string UserName = 3;
     string Password = 2;
+    string ConfirmedPassword = 4;
 }
 
 message ReplyMessage {

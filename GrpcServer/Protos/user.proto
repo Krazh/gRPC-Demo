@@ -1,0 +1,43 @@
+﻿
+syntax = "proto3";
+
+option csharp_namespace = "GrpcServer";
+
+package user;
+
+service User {
+    rpc CreateUser (UserTransferModel) returns (ReplyMessage);
+    rpc GetAllUsers (NullModel) returns (stream UserTransferModel);
+    rpc GetUserById (UserRequestModel) returns (UserTransferModel);
+    rpc UpsertUser (UserTransferModel) returns (UpsertReplyMessage);
+    rpc DeleteUser (.user.UserRequestModel) returns (.user.ReplyMessage);
+    rpc LoginUser (UserTransferModel) returns (LoginReply);
+}
+
+message LoginReply {
+    string clientToken = 1;
+    bool IsSuccess = 2;
+}
+
+message NullModel {
+    bool IsEmpty = 1;
+}
+
+message UserRequestModel {
+    string Id = 1;
+}
+
+message UpsertReplyMessage {
+    bool IsUpdated = 1;
+    UserTransferModel User = 2;
+}
+
+message UserTransferModel {
+    string Id = 1;
+    string UserName = 3;
+    string Password = 2;
+}
+
+message ReplyMessage {
+    bool IsSuccess = 1;
+}

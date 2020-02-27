@@ -52,10 +52,23 @@ namespace GrpcClient
             var loginPassword = Console.ReadLine();
 
             var user = await client.LoginUserAsync(
-                new UserTransferModel {UserName = userName, Password = loginPassword});
+                new UserTransferModel {UserName = userName, Password = loginPassword, ConfirmedPassword = loginPassword});
 
             if (user.IsSuccess)
                 Console.WriteLine($"You have successfully logged in.");
+
+            Console.WriteLine("Attempting to delete a user");
+            var result = new ReplyMessage();
+            try
+            {
+                 result = await client.DeleteUserAsync(new UserRequestModel {Id = "5e4f0858775b0e5550988c37"});
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+            Console.WriteLine(result.IsSuccess);
 
             Console.ReadLine();
         }

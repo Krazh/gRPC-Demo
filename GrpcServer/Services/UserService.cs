@@ -22,6 +22,7 @@ namespace GrpcServer.Services
             _db = new MongoCRUD("UserDB");
         }
 
+        [AllowAnonymous]
         public override Task<ReplyMessage> CreateUser(UserTransferModel request, ServerCallContext context)
         {
             UserModel user = new UserModel
@@ -79,18 +80,14 @@ namespace GrpcServer.Services
             return Task.FromResult(new ReplyMessage {IsSuccess = result.IsAcknowledged});
         }
 
+        [AllowAnonymous]
         public override Task<LoginReply> LoginUser(UserTransferModel request, ServerCallContext context)
         {
             var users = _db.LoadRecords<UserModel>(_table);
             var user = users.First(x => x.UserName == request.UserName);
-            var isSuccesValidatePassword = PasswordHelper.ValidatePassword(request.Password, user.Password);
-            if (isSuccesValidatePassword)
-            {
-                // Implement a client token system. 
-                return Task.FromResult(new LoginReply {ClientToken = "lol", IsSuccess = true});
-            }
+            var isSuccessValidatePassword = PasswordHelper.ValidatePassword(request.Password, user.Password);
 
-            return Task.FromResult(new LoginReply{IsSuccess = false});
+            return Task.FromResult(isSuccessValidatePassword ? new LoginReply {ClientToken = "lol", IsSuccess = true} : new LoginReply{IsSuccess = false});
         }
     }
 }
